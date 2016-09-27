@@ -5,7 +5,8 @@ import socket
 import thread
 import time
 from os import curdir, sep
-
+import logging
+logging.basicConfig(filename='web-stress.log',level=logging.DEBUG,format='%(asctime)s %(message)s',datefmt='%m/%d/%Y %I:%M:%S %p')
 PORT_NUMBER = 8080
 def memory_gen():
     # generate memory load
@@ -32,16 +33,16 @@ class myHandler(BaseHTTPRequestHandler):
         #self.wfile.write("Hello World from " + socket.gethostname())
         self.wfile.write(htmlFormat("hostname: "+hn,"get response from: " + ip))
         return
-
+    def log_message(self, format, *args):
+        open("web-stress.log", "a").write("%s - - [%s] %s\n" %( self.log_date_time_string(), self.address_string(), format%args))
 try:
     #Create a web server and define the handler to manage the incoming request
     server = HTTPServer(('', PORT_NUMBER), myHandler)
-    print 'Started httpserver on port ' , PORT_NUMBER
+    logging.info('Started httpserver on port %s' , PORT_NUMBER)
 
     #Wait forever for incoming http requests
     server.serve_forever()
 
 except KeyboardInterrupt:
-    print '^C received, shutting down the web server'
+    logging.info('^C received, shutting down the web server')
     server.socket.close()
-
