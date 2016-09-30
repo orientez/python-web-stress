@@ -14,15 +14,18 @@ def memory_gen():
     mload.append(' ' * 100 * 1000 * 1000) 
     time.sleep(1)
 
-def htmlFormat(title, body):
-    thread.start_new_thread(memory_gen, ())
+def htmlFormat(title, body, stressType):
+    if 'memory' in stressType:
+        thread.start_new_thread(memory_gen, ())
     #Generate cpu load
-    sorted([random.random() for i in range(300000)])
+    if 'cpu' in stressType:
+        sorted([random.random() for i in range(300000)])
     return "<html>\n<head>\n<title>{0}</title>\n</head>\n<body><h1 align=\"center\">{1}</h1></body>\n</html>".format(title,body)
 #This class will handles any incoming request from the browser 
 class myHandler(BaseHTTPRequestHandler):
     #Handler for the GET requests
     def do_GET(self):
+        # print self.path
         self.send_response(200)
         self.send_header('Content-type','text/html')
         self.end_headers()
@@ -31,7 +34,7 @@ class myHandler(BaseHTTPRequestHandler):
         ip = s.getsockname()[0]
         hn = socket.gethostname()
         #self.wfile.write("Hello World from " + socket.gethostname())
-        self.wfile.write(htmlFormat("hostname: "+hn,"get response from: " + ip))
+        self.wfile.write(htmlFormat("hostname: "+hn,"get response from: " + ip, self.path))
         return
     def log_message(self, format, *args):
         open("web-stress.log", "a").write("%s - - [%s] %s\n" %( self.log_date_time_string(), self.address_string(), format%args))
